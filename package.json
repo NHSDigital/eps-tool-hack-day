@@ -1,0 +1,55 @@
+{
+    "name": "eps-tool-hack-day",
+    "version": "1.0.0",
+    "description": "![Build](https://github.com/NHSDigital/eps-tool-hack-day/workflows/Build/badge.svg?branch=main)",
+    "scripts": {
+        "test": "jest",
+        "check-licenses": "node_modules/.bin/license-checker --failOn GPL --failOn LGPL",
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NHSDigital/eps-tool-hack-day"
+    },
+    "keywords": [],
+    "author": "NHS Digital",
+    "license": "MIT",
+    "workspaces": [
+        "packages/hack",
+        "packages/cdk",
+        "packages/foo"
+    ],
+    "devDependencies": {
+        "@eslint/js": "^9.38.0",
+        "@jest/globals": "^30.1.1",
+        "@types/jest": "^30.0.0",
+        "@types/node": "^25.1.0",
+        "@typescript-eslint/eslint-plugin": "^8.48.0",
+        "@typescript-eslint/parser": "^8.50.1",
+        "@vitest/coverage-v8": "^4.0.18",
+        "aws-sdk-client-mock": "^4.1.0",
+        "eslint": "^9.39.2",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-import-newlines": "^1.3.4",
+        "eslint-plugin-prettier": "^5.5.4",
+        "eslint-plugin-react": "^7.37.5",
+        "globals": "^17.1.0",
+        "jest": "^30.2.0",
+        "jest-environment-jsdom": "^30.1.2",
+        "jest-junit": "^16.0.0",
+        "license-checker": "^25.0.1",
+        "ts-jest": "^29.4.6",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.52.0",
+        "vitest": "^4.0.18"
+    },
+    "dependencies": {
+        "conventional-changelog-eslint": "^6.0.0",
+        "esbuild": "^0.27.2",
+        "hack": "^0.8.1"
+    }
+}

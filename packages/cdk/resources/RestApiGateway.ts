@@ -1,0 +1,83 @@
+import {RemovalPolicy} from "aws-cdk-lib"
+import {
+  CfnStage,
+  EndpointType,
+  LogGroupLogDestination,
+  MethodLoggingLevel,
+  RestApi
+} from "aws-cdk-lib/aws-apigateway"
+import {IRole, Role, ServicePrincipal} from "aws-cdk-lib/aws-iam"
+import {IStream} from "aws-cdk-lib/aws-kinesis"
+import {IKey} from "aws-cdk-lib/aws-kms"
+import {LogGroup} from "aws-cdk-lib/aws-logs"
+import {Construct} from "constructs"
+import {accessLogFormat} from "./RestApiGateway/accessLogFormat"
+
+export interface RestApiGatewayProps {
+  readonly serviceName: string
+  readonly stackName: string
+  readonly logRetentionInDays: number
+  readonly logLevel: string
+  readonly cloudwatchKmsKey: IKey
+  readonly splunkDeliveryStream: IStream
+  readonly splunkSubscriptionFilterRole: IRole
+}
+
+/**
+ * Resources for a Rest API Gateway
+ * Note - methods are not defined here
+ * this just creates the api gateway and authorizer
+ */
+
+export class RestApiGateway extends Construct {
+  public readonly apiGateway: RestApi
+  public readonly apiGatewayRole: Role
+  public readonly stageArn: string
+  oauth2ApiGateway: RestApi
+
+  public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
+    super(scope, id)
+
+    // Resources
+    const apiGatewayAccessLogGroup = new LogGroup(this, "ApiGatewayAccessLogGroup", {
+      logGroupName: `/aws/apigateway/${props.serviceName}-apigw-${id}`,
+      retention: props.logRetentionInDays,
+      encryptionKey: props.cloudwatchKmsKey,
+      removalPolicy: RemovalPolicy.DESTROY
+    })
+
+    const apiGateway = new RestApi(this, "ApiGateway", {
+      restApiName: `${props.serviceName}-apigw-${id}`,
+      endpointConfiguration: {
+        types: [EndpointType.REGIONAL]
+      },
+      deploy: true,
+      deployOptions: {
+        accessLogDestination: new LogGroupLogDestination(apiGatewayAccessLogGroup),
+        accessLogFormat: accessLogFormat(),
+        loggingLevel: MethodLoggingLevel.INFO,
+        metricsEnabled: true
+      }
+    })
+
+    const apiGatewayRole = new Role(this, "ApiGatewayRole", {
+      assumedBy: new ServicePrincipal("apigateway.amazonaws.com"),
+      managedPolicies: []
+    })
+
+
+    const cfnStage = apiGateway.deploymentStage.node.defaultChild as CfnStage
+    cfnStage.cfnOptions.metadata = {
+      guard: {
+        SuppressedRules: [
+          "API_GW_CACHE_ENABLED_AND_ENCRYPTED"
+        ]
+      }
+    }
+
+    // Outputs
+    this.apiGateway = apiGateway
+    this.apiGatewayRole = apiGatewayRole
+    this.stageArn = apiGateway.deploymentStage.stageArn
+  }
+}

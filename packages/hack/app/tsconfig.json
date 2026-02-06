@@ -1,0 +1,34 @@
+{
+  "extends": "../tsconfig.json",
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "tests/**/*.json",
+    "**/*.tsx",
+    "**/*.d.ts",
+    "vite-env.d.ts",
+    "jest.config.ts",
+    "jest.setup.ts",
+    "global.d.ts"
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "types": ["node", "vite/client"],
+    "moduleResolution": "bundler",
+    "rootDirs": ["..", "../.react-router/types"],
+    "noEmit": true,
+    "module": "esnext",
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "composite": false,
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+    "allowImportingTsExtensions": true
+  },
+  "exclude": ["node_modules"],
+  "references": [
+  ]
+}

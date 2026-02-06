@@ -1,0 +1,318 @@
+name: release all stacks
+
+on:
+  workflow_call:
+    inputs:
+      SERVICE_NAME:
+        required: true
+        type: string
+      TARGET_ENVIRONMENT:
+        required: true
+        type: string
+      VERSION_NUMBER:
+        required: true
+        type: string
+      COMMIT_ID:
+        required: true
+        type: string
+      LOG_LEVEL:
+        type: string
+      ROUTE53_EXPORT_NAME:
+        type: string
+        description: This is the part of the route53 export name to use to identify the route 53 zone where the domain names are created - can be either EPS (for *.national.nhs.uk) or CPT (for prescriptiontracker.nhs.uk)
+      REACT_LOG_LEVEL:
+        type: string
+        required: true
+      LOG_RETENTION_IN_DAYS:
+        type: string
+        required: true
+      IS_PULL_REQUEST:
+        type: boolean
+        required: true
+jobs:
+  release_all_code:
+    runs-on: ubuntu-22.04
+    environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - name: Checkout local github actions
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+          sparse-checkout: |
+            .github
+
+      - name: Configure AWS Credentials
+        id: connect_aws_pull_image
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
+          role-session-name: prescription-clinical-tracker-ui-pull-image
+      - name: build_artifact download
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: build_artifact
+
+      - name: extract build_artifact
+        run: |
+          mkdir -p .build
+          tar -xf artifact.tar -C .build
+
+      - name: Retrieve AWS Account ID
+        id: retrieve_aws_account_id
+        run: echo "ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)" >> "$GITHUB_ENV"
+
+      - name: Configure AWS Credentials
+        id: connect_aws_for_deployment
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+          role-session-name: hack-deployment
+          output-credentials: true
+
+      - name: check redeploy stateful stack
+        id: check_redeploy_stateful_stack
+        env:
+          AWS_MAX_ATTEMPTS: 20
+        run: |
+          CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+          CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
+          CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}:cloudfrontDistribution:Id" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          CLOUDFRONT_DISTRIBUTION_ARN=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}:cloudfrontDistribution:Arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          REDEPLOY_STATEFUL_STACK="false"
+
+          if [ -z "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
+            echo "CLOUDFRONT_DISTRIBUTION_ID not found - setting redeploy stateful stack to true"
+            REDEPLOY_STATEFUL_STACK="true"
+          fi
+          if [ -z "${CLOUDFRONT_DISTRIBUTION_ARN}" ]; then
+            echo "CLOUDFRONT_DISTRIBUTION_ARN not found - setting redeploy stateful stack to true"
+            REDEPLOY_STATEFUL_STACK="true"
+          fi
+
+          if [ "${REDEPLOY_STATEFUL_STACK}" == "false" ]; then
+            echo "Everything already set - setting redeploy stateful stack to false"
+          fi
+          EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | \
+                  jq \
+                  --arg EXPORT_NAME "eps-route53-resources:${ROUTE53_EXPORT_NAME}-domain" \
+                  -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          EPS_HOSTED_ZONE_ID=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "eps-route53-resources:${ROUTE53_EXPORT_NAME}-ZoneID" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          SPLUNK_DELIVERY_STREAM=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "lambda-resources:SplunkDeliveryStream" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          SPLUNK_SUBSCRIPTION_FILTER_ROLE=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "lambda-resources:SplunkSubscriptionFilterRole" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          CLOUDFRONT_CERT_ARN=$(echo "$CF_US_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:cloudfrontCertificate:Arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          SHORT_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:shortCloudfrontDomain:Name" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          FULL_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+
+
+          echo "REDEPLOY_STATEFUL_STACK=$REDEPLOY_STATEFUL_STACK" >> "$GITHUB_OUTPUT"
+          echo "CLOUDFRONT_DISTRIBUTION_ARN=$CLOUDFRONT_DISTRIBUTION_ARN" >> "$GITHUB_OUTPUT"
+          echo "CLOUDFRONT_DISTRIBUTION_ID=$CLOUDFRONT_DISTRIBUTION_ID" >> "$GITHUB_OUTPUT"
+          echo "EPS_DOMAIN_NAME=$EPS_DOMAIN_NAME" >> "$GITHUB_OUTPUT"
+          echo "EPS_HOSTED_ZONE_ID=$EPS_HOSTED_ZONE_ID" >> "$GITHUB_OUTPUT"
+          echo "SPLUNK_DELIVERY_STREAM=$SPLUNK_DELIVERY_STREAM" >> "$GITHUB_OUTPUT"
+          echo "SPLUNK_SUBSCRIPTION_FILTER_ROLE=$SPLUNK_SUBSCRIPTION_FILTER_ROLE" >> "$GITHUB_OUTPUT"
+          echo "CLOUDFRONT_CERT_ARN=$CLOUDFRONT_CERT_ARN" >> "$GITHUB_OUTPUT"
+          echo "SHORT_CLOUDFRONT_DOMAIN=$SHORT_CLOUDFRONT_DOMAIN" >> "$GITHUB_OUTPUT"
+          echo "FULL_CLOUDFRONT_DOMAIN=$FULL_CLOUDFRONT_DOMAIN" >> "$GITHUB_OUTPUT"
+      - name: Deploy UsCertStack
+        run: npm run cdk-deploy --workspace packages/cdk
+        shell: bash
+        env:
+          CDK_APP_NAME: "HackApp"
+          CDK_STACK_NAME: "UsCertsStack"
+          CDK_CONFIG_stackName: "${{ inputs.SERVICE_NAME }}-us-certs"
+          CDK_CONFIG_versionNumber: "${{ inputs.VERSION_NUMBER }}"
+          CDK_CONFIG_commitId: "${{ inputs.COMMIT_ID }}"
+          CDK_CONFIG_isPullRequest: "${{ inputs.IS_PULL_REQUEST }}"
+          CDK_CONFIG_environment: "dev"
+          CDK_CONFIG_logRetentionInDays: "${{ inputs.LOG_RETENTION_IN_DAYS }}"
+          CDK_CONFIG_logLevel: "${{ inputs.LOG_LEVEL }}"
+          CDK_CONFIG_epsDomainName: ${{ steps.check_redeploy_stateful_stack.outputs.EPS_DOMAIN_NAME }}
+          CDK_CONFIG_epsHostedZoneId: ${{ steps.check_redeploy_stateful_stack.outputs.EPS_HOSTED_ZONE_ID }}
+          CDK_CONFIG_splunkDeliveryStream: ${{ steps.check_redeploy_stateful_stack.outputs.SPLUNK_DELIVERY_STREAM }}
+          CDK_CONFIG_splunkSubscriptionFilterRole: ${{ steps.check_redeploy_stateful_stack.outputs.SPLUNK_SUBSCRIPTION_FILTER_ROLE }}
+          CDK_CONFIG_cloudfrontDistributionArn: ${{ steps.check_redeploy_stateful_stack.outputs.CLOUDFRONT_DISTRIBUTION_ARN }}
+          CDK_CONFIG_cloudfrontCertArn: ${{ steps.check_redeploy_stateful_stack.outputs.CLOUDFRONT_CERT_ARN }}
+          CDK_CONFIG_shortCloudfrontDomain:  ${{ steps.check_redeploy_stateful_stack.outputs.SHORT_CLOUDFRONT_DOMAIN }}
+          CDK_CONFIG_fullCloudfrontDomain: ${{ steps.check_redeploy_stateful_stack.outputs.FULL_CLOUDFRONT_DOMAIN }}
+          CDK_CONFIG_cloudfrontDistributionId: ${{ steps.check_redeploy_stateful_stack.outputs.CLOUDFRONT_DISTRIBUTION_ID }}
+          REQUIRE_APPROVAL: "never"
+      - name: Deploy HackStack
+        run: |
+          CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
+          CDK_CONFIG_cloudfrontCertArn=$(echo "$CF_US_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:cloudfrontCertificate:Arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          CDK_CONFIG_shortCloudfrontDomain=$(echo "$CF_US_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:shortCloudfrontDomain:Name" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          CDK_CONFIG_fullCloudfrontDomain=$(echo "$CF_US_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          npm run cdk-deploy --workspace packages/cdk
+        shell: bash
+        env:
+          AWS_MAX_ATTEMPTS: 20
+          CDK_APP_NAME: "HackApp"
+          CDK_STACK_NAME: "HackStack"
+          CDK_CONFIG_stackName: "${{ inputs.SERVICE_NAME }}-hack-stack"
+          CDK_CONFIG_versionNumber: "${{ inputs.VERSION_NUMBER }}"
+          CDK_CONFIG_commitId: "${{ inputs.COMMIT_ID }}"
+          CDK_CONFIG_isPullRequest: "${{ inputs.IS_PULL_REQUEST }}"
+          CDK_CONFIG_environment: "dev"
+          CDK_CONFIG_logRetentionInDays: "${{ inputs.LOG_RETENTION_IN_DAYS }}"
+          CDK_CONFIG_logLevel: "${{ inputs.LOG_LEVEL }}"
+          CDK_CONFIG_epsDomainName: ${{ steps.check_redeploy_stateful_stack.outputs.EPS_DOMAIN_NAME }}
+          CDK_CONFIG_epsHostedZoneId:  ${{ steps.check_redeploy_stateful_stack.outputs.EPS_HOSTED_ZONE_ID }}
+          CDK_CONFIG_splunkDeliveryStream: ${{ steps.check_redeploy_stateful_stack.outputs.SPLUNK_DELIVERY_STREAM }}
+          CDK_CONFIG_splunkSubscriptionFilterRole: ${{ steps.check_redeploy_stateful_stack.outputs.SPLUNK_SUBSCRIPTION_FILTER_ROLE }}
+          CDK_CONFIG_cloudfrontDistributionArn: ${{ steps.check_redeploy_stateful_stack.outputs.CLOUDFRONT_DISTRIBUTION_ARN }}
+          CDK_CONFIG_cloudfrontDistributionId: ${{ steps.check_redeploy_stateful_stack.outputs.CLOUDFRONT_DISTRIBUTION_ID }}
+          REQUIRE_APPROVAL: "never"
+      - name: Set Environment Variables for website deployment
+        id: setup_env_website_deployment
+        env:
+          AWS_MAX_ATTEMPTS: 20
+        run: |
+          CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+          CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
+          SERVICE_NAME='${{ inputs.SERVICE_NAME }}'
+          fullCloudfrontDomain=$(echo "$CF_US_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+
+          {
+            echo "fullCloudfrontDomain=${fullCloudfrontDomain}"
+            } >> "$GITHUB_ENV"
+
+      - name: build react app
+        run: |
+          export VITE_COMMIT_ID=${{ inputs.COMMIT_ID }}
+          export VITE_VERSION_NUMBER=${{ inputs.VERSION_NUMBER }}
+          export VITE_TARGET_ENVIRONMENT=${{ inputs.TARGET_ENVIRONMENT }}
+
+          cd .build
+          make react-build
+
+      - name: deploy website
+        run: |
+          staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
+          aws s3 cp ".build/packages/staticContent/404.html" "s3://${staticBucketName}/404.html"
+          aws s3 cp ".build/packages/staticContent/404.css" "s3://${staticBucketName}/404.css"
+          aws s3 cp ".build/packages/staticContent/500.html" "s3://${staticBucketName}/500.html"
+          aws s3 cp --recursive ".build/packages/hack/build/client/" "s3://${staticBucketName}/${{ inputs.VERSION_NUMBER }}/"
+
+      - name: update cloudfront kvs
+        id: update_cloudfront_kvs
+        shell: bash
+        run: |
+          # shellcheck disable=SC2140
+          keyValueStore=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:KeyValueStore:Arn"'].Value" --output text)
+          # shellcheck disable=SC2140
+          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
+
+          newVersion="${{ inputs.VERSION_NUMBER }}"
+
+          ETag=$(aws cloudfront-keyvaluestore describe-key-value-store \
+              --kvs-arn="$keyValueStore" \
+              --query ETag --output text)
+
+          existing_keys=$(aws cloudfront-keyvaluestore list-keys --kvs-arn "$keyValueStore" --query "Items[?Key=='site_version']" --output text)
+
+          # Check if "version" key exists
+          if [[ -z "$existing_keys" ]]; then
+            # Insert a new "version" key
+            aws cloudfront-keyvaluestore put-key \
+              --if-match="${ETag}" \
+              --key=site_version \
+              --value="$newVersion"\
+              --kvs-arn "$keyValueStore"
+            echo "Inserted new 'site_version' key with value $newVersion."
+          else
+            # Update the existing "version" key
+            aws cloudfront-keyvaluestore update-keys \
+              --if-match="${ETag}" \
+              --kvs-arn "$keyValueStore" \
+              --puts Key=site_version,Value="$newVersion"
+            echo "Updated the 'site_version' key to $newVersion."
+          fi
+
+          # invalidate the cache
+          aws cloudfront create-invalidation --distribution-id "${cloudfrontDistributionId}" --paths '/*'
+
+
+      - name: Redeploy HackStack
+        if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
+        run: |
+          CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
+          CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+          CDK_CONFIG_cloudfrontCertArn=$(echo "$CF_US_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:cloudfrontCertificate:Arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          CDK_CONFIG_shortCloudfrontDomain=$(echo "$CF_US_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:shortCloudfrontDomain:Name" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          CDK_CONFIG_fullCloudfrontDomain=$(echo "$CF_US_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          CDK_CONFIG_cloudfrontDistributionId=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}:cloudfrontDistribution:Id" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          CDK_CONFIG_cloudfrontDistributionArn=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}:cloudfrontDistribution:Arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          npm run cdk-deploy --workspace packages/cdk
+        shell: bash
+        env:
+          AWS_MAX_ATTEMPTS: 20
+          CDK_APP_NAME: "HackApp"
+          CDK_STACK_NAME: "HackStack"
+          CDK_CONFIG_stackName: "${{ inputs.SERVICE_NAME }}-hack-stack"
+          CDK_CONFIG_versionNumber: "${{ inputs.VERSION_NUMBER }}"
+          CDK_CONFIG_commitId: "${{ inputs.COMMIT_ID }}"
+          CDK_CONFIG_isPullRequest: "${{ inputs.IS_PULL_REQUEST }}"
+          CDK_CONFIG_environment: "dev"
+          CDK_CONFIG_logRetentionInDays: "${{ inputs.LOG_RETENTION_IN_DAYS }}"
+          CDK_CONFIG_logLevel: "${{ inputs.LOG_LEVEL }}"
+          CDK_CONFIG_epsDomainName: ${{ steps.check_redeploy_stateful_stack.outputs.EPS_DOMAIN_NAME }}
+          CDK_CONFIG_epsHostedZoneId:  ${{ steps.check_redeploy_stateful_stack.outputs.EPS_HOSTED_ZONE_ID }}
+          CDK_CONFIG_splunkDeliveryStream: ${{ steps.check_redeploy_stateful_stack.outputs.SPLUNK_DELIVERY_STREAM }}
+          CDK_CONFIG_splunkSubscriptionFilterRole: ${{ steps.check_redeploy_stateful_stack.outputs.SPLUNK_SUBSCRIPTION_FILTER_ROLE }}
+          REQUIRE_APPROVAL: "never"
+

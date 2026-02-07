@@ -2,6 +2,7 @@ import {UsCertsStack} from "../stacks/UsCertsStack"
 import {HackStack} from "../stacks/HackStack"
 import {
   createApp,
+  getConfigFromEnvVar,
 } from "@nhsdigital/eps-cdk-constructs"
 
 
@@ -15,7 +16,7 @@ async function main() {
     driftDetectionGroup: "hackapp-drift-group",
   })
 
-  const serviceName = "hackapp"
+  const serviceName: string = getConfigFromEnvVar("serviceName")
   const shortCloudfrontDomain = serviceName
   const usCertsStack = new UsCertsStack(app, "UsCertsStack", {
     env: {

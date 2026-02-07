@@ -2,6 +2,7 @@ export CDK_CONFIG_versionNumber=undefined
 export CDK_CONFIG_commitId=undefined
 export CDK_CONFIG_isPullRequest=true
 export CDK_CONFIG_environment=dev
+export CDK_CONFIG_serviceName=hackapp
 
 guard-%:
 	@ if [ "${${*}}" = "" ]; then \

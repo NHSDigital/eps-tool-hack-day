@@ -33,7 +33,6 @@ export class RestApiGateway extends Construct {
   public readonly apiGateway: RestApi
   public readonly apiGatewayRole: Role
   public readonly stageArn: string
-  oauth2ApiGateway: RestApi
 
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
     super(scope, id)

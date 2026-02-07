@@ -33,7 +33,7 @@ export class RestApiGatewayMethods extends Construct {
     }
 
 
-    const prescriptionDetailsLambdaResource = props.restApiGateway.root
+    const prescriptionDetailsLambdaResource = props.restApiGateway.root.addResource("foo")
     prescriptionDetailsLambdaResource.addMethod("GET", new LambdaIntegration(props.fooLambda, {
        credentialsRole: props.restAPiGatewayRole
      }), {

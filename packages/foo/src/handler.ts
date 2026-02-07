@@ -3,7 +3,6 @@ import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import errorHandler from "@nhs/fhir-middy-error-handler"
-import {createSpineClient} from "@nhsdigital/eps-spine-client"
 
 const logger = new Logger({serviceName: "status"})
 
@@ -29,10 +28,8 @@ const lambdaHandler = async (event: any): Promise<any> => {
   const commitId = process.env.COMMIT_ID
   const versionNumber = process.env.VERSION_NUMBER
 
-  const spineClient = createSpineClient(logger)
-  const spineStatus = await spineClient.getStatus()
 
-  const statusBody = {...spineStatus, commitId: commitId, versionNumber: versionNumber}
+  const statusBody = {commitId: commitId, versionNumber: versionNumber}
 
   return {
     statusCode: 200,

@@ -36,10 +36,13 @@ export class UsCertsStack extends Stack {
     const epsHostedZoneId: string = getConfigFromEnvVar("epsHostedZoneId")
     const splunkDeliveryStream: string = getConfigFromEnvVar("splunkDeliveryStream")
     const splunkSubscriptionFilterRole: string = getConfigFromEnvVar("splunkSubscriptionFilterRole")
-    const cloudfrontDistributionArn: string = getConfigFromEnvVar("cloudfrontDistributionArn")
+    let cloudfrontDistributionArn: string | undefined = getConfigFromEnvVar("cloudfrontDistributionArn")
     const logRetentionInDays: number = getNumberConfigFromEnvVar("logRetentionInDays")
     const isPullRequest: boolean = getBooleanConfigFromEnvVar("isPullRequest")
 
+    if (cloudfrontDistributionArn === "UNKNOWN") {
+      cloudfrontDistributionArn = undefined
+    }
     // Coerce context and imports to relevant types
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
       hostedZoneId: epsHostedZoneId,

@@ -87,10 +87,12 @@ jobs:
 
           if [ -z "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
             echo "CLOUDFRONT_DISTRIBUTION_ID not found - setting redeploy stateful stack to true"
+            CLOUDFRONT_DISTRIBUTION_ID="UNKNOWN"
             REDEPLOY_STATEFUL_STACK="true"
           fi
           if [ -z "${CLOUDFRONT_DISTRIBUTION_ARN}" ]; then
             echo "CLOUDFRONT_DISTRIBUTION_ARN not found - setting redeploy stateful stack to true"
+            CLOUDFRONT_DISTRIBUTION_ARN="UNKNOWN"
             REDEPLOY_STATEFUL_STACK="true"
           fi
 

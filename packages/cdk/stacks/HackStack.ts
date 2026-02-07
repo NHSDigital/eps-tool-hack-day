@@ -48,10 +48,13 @@ export class HackStack extends Stack {
     const cloudfrontCertArn: string = getConfigFromEnvVar("cloudfrontCertArn")
     const shortCloudfrontDomain: string = getConfigFromEnvVar("shortCloudfrontDomain")
     const fullCloudfrontDomain: string = getConfigFromEnvVar("fullCloudfrontDomain")
-    const cloudfrontDistributionId: string = getConfigFromEnvVar("cloudfrontDistributionId")
+    let cloudfrontDistributionId: string | undefined = getConfigFromEnvVar("cloudfrontDistributionId")
     const splunkDeliveryStreamImport = Fn.importValue("lambda-resources:SplunkDeliveryStream")
     const splunkSubscriptionFilterRoleImport = Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")
 
+    if (cloudfrontDistributionId === "UNKNOWN") {
+      cloudfrontDistributionId = undefined
+    }
     const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
     const cloudwatchKmsKeyImport = Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")
     const cloudwatchKmsKey = Key.fromKeyArn(

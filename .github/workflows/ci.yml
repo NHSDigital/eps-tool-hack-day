@@ -47,7 +47,7 @@ jobs:
     needs: [package_code, get_commit_id]
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      SERVICE_NAME: cpt-ui
+      SERVICE_NAME: hackapp
       TARGET_ENVIRONMENT: dev
       VERSION_NUMBER: "hack"
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}

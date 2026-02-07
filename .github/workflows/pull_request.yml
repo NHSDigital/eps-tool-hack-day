@@ -97,7 +97,7 @@ jobs:
       ! contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      SERVICE_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
+      SERVICE_NAME: hackapp-pr-${{needs.get_issue_number.outputs.issue_number}}
       TARGET_ENVIRONMENT: dev-pr
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: "static-pr"

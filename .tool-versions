@@ -4,4 +4,3 @@ poetry 2.2.1
 shellcheck 0.10.0
 direnv 2.32.2
 actionlint 1.7.3
-ruby 3.3.0

@@ -45,7 +45,7 @@ export class HackStack extends Stack {
 
     const epsDomainName: string = getConfigFromEnvVar("epsDomainName")
     const epsHostedZoneId: string = getConfigFromEnvVar("epsHostedZoneId")
-    const cloudfrontCertArn: string = getConfigFromEnvVar("cloudfrontCertArn")
+    let cloudfrontCertArn: string = getConfigFromEnvVar("cloudfrontCertArn")
     const shortCloudfrontDomain: string = getConfigFromEnvVar("shortCloudfrontDomain")
     const fullCloudfrontDomain: string = getConfigFromEnvVar("fullCloudfrontDomain")
     let cloudfrontDistributionId: string | undefined = getConfigFromEnvVar("cloudfrontDistributionId")
@@ -54,6 +54,9 @@ export class HackStack extends Stack {
 
     if (cloudfrontDistributionId === "UNKNOWN") {
       cloudfrontDistributionId = undefined
+    }
+    if (cloudfrontCertArn === "UNKNOWN") {
+      cloudfrontCertArn = "arn:aws:acm:us-east-1:123456789012:certificate/1234abcd-56ef-78gh-90ij-1234567890ab"
     }
     const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
     const cloudwatchKmsKeyImport = Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")

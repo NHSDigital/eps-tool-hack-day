@@ -10,7 +10,7 @@ import {Construct} from "constructs"
 
 export interface CloudfrontLogDeliveryProps {
   readonly cloudfrontLogGroup: ILogGroup
-  readonly cloudfrontDistributionArn: string
+  readonly cloudfrontDistributionArn: string | undefined
 }
 
 export class CloudfrontLogDelivery extends Construct {

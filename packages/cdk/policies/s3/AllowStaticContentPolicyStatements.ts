@@ -16,7 +16,7 @@ import {Bucket} from "aws-cdk-lib/aws-s3"
 
 export interface PolicyProps {
   bucket: Bucket
-  cloudfrontDistributionId: string
+  cloudfrontDistributionId: string | undefined
   deploymentRole: IRole
   region: string
 }

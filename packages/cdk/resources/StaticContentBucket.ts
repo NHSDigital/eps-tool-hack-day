@@ -18,7 +18,7 @@ import {AllowStaticBucketKmsKeyAccessPolicy} from "../policies/kms/AllowStaticBu
 
 export interface StaticContentBucketProps {
   readonly bucketName: string
-  readonly cloudfrontDistributionId: string
+  readonly cloudfrontDistributionId: string | undefined
   readonly deploymentRole: IRole
   readonly region: string
 }
@@ -77,19 +77,19 @@ export class StaticContentBucket extends Construct{
      then it adds the correct policy to allow access from cloudfront and rum
     */
 
-    const kmsPolicies = new AllowStaticBucketKmsKeyAccessPolicy({
-      cloudfrontDistributionId: props.cloudfrontDistributionId,
-      deploymentRole: props.deploymentRole,
-      region: props.region
-    })
-
-    const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
-    contentBucketKmsKey.keyPolicy = kmsPolicies.policyDocument.toJSON()
 
     /* As you cannot modify imported policies, cdk cannot not update the s3 bucket with the correct permissions
     for OAC when the distribution and bucket are in different stacks
     !! This can only be added after the distribution has been deployed !! */
     if (props.cloudfrontDistributionId){
+      const kmsPolicies = new AllowStaticBucketKmsKeyAccessPolicy({
+        cloudfrontDistributionId: props.cloudfrontDistributionId,
+        deploymentRole: props.deploymentRole,
+        region: props.region
+      })
+
+      const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
+      contentBucketKmsKey.keyPolicy = kmsPolicies.policyDocument.toJSON()
       bucket.addToResourcePolicy(bucketPolicies.cloudfrontAccessPolicyStatement)
     }
 

@@ -45,13 +45,6 @@ jobs:
           sparse-checkout: |
             .github
 
-      - name: Configure AWS Credentials
-        id: connect_aws_pull_image
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
-        with:
-          aws-region: eu-west-2
-          role-to-assume: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
-          role-session-name: prescription-clinical-tracker-ui-pull-image
       - name: build_artifact download
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:

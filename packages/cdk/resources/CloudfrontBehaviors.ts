@@ -22,6 +22,8 @@ export interface CloudfrontBehaviorsProps {
   readonly serviceName: string
   readonly stackName: string
   readonly staticContentBucketOrigin: IOrigin
+  readonly apiGatewayOrigin: RestApiOrigin
+  readonly apiGatewayRequestPolicy: OriginRequestPolicy
 }
 
 /**
@@ -199,8 +201,10 @@ export class CloudfrontBehaviors extends Construct{
         ],
       },
       "/api/*": {
+        origin: props.apiGatewayOrigin,
         allowedMethods: AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        originRequestPolicy: props.apiGatewayRequestPolicy,
         cachePolicy: CachePolicy.CACHING_DISABLED,
         functionAssociations: [
           {

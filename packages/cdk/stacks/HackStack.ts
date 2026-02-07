@@ -16,8 +16,8 @@ import { Stream } from "aws-cdk-lib/aws-kinesis"
 import { ukRegionLogGroups } from "../resources/ukRegionLogGroups"
 import { RestApiGateway } from "../resources/RestApiGateway"
 import { RestApiGatewayMethods } from "../resources/RestApiGateway/RestApiGatewayMethods"
-import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins"
-import { AccessLevel, AllowedMethods, FunctionEventType, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront"
+import { RestApiOrigin, S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins"
+import { AccessLevel, AllowedMethods, FunctionEventType, OriginRequestCookieBehavior, OriginRequestHeaderBehavior, OriginRequestPolicy, OriginRequestQueryStringBehavior, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront"
 import { CloudfrontBehaviors } from "../resources/CloudfrontBehaviors"
 import { CloudfrontDistribution } from "../resources/CloudfrontDistribution"
 import { getConfigFromEnvVar } from "@nhsdigital/eps-cdk-constructs"
@@ -122,9 +122,22 @@ export class HackStack extends Stack {
         originAccessLevels: [AccessLevel.READ]
       }
     )
+    const apiGatewayOrigin = new RestApiOrigin(apiGateway.apiGateway, {
+      customHeaders: {
+        "destination-api-apigw-id": apiGateway.apiGateway.restApiId
+      }
+    })
+    const apiGatewayRequestPolicy = new OriginRequestPolicy(this, "apiGatewayRequestPolicy", {
+      originRequestPolicyName: `${props.serviceName}-ApiGatewayRequestPolicy`,
+      cookieBehavior: OriginRequestCookieBehavior.all(),
+      headerBehavior: OriginRequestHeaderBehavior.all(),
+      queryStringBehavior: OriginRequestQueryStringBehavior.all()
+    })
     const cloudfrontBehaviors = new CloudfrontBehaviors(this, "CloudfrontBehaviors", {
       serviceName: props.serviceName,
       stackName: props.stackName,
+      apiGatewayOrigin: apiGatewayOrigin,
+      apiGatewayRequestPolicy: apiGatewayRequestPolicy,
       staticContentBucketOrigin: staticContentBucketOrigin,
     })
     

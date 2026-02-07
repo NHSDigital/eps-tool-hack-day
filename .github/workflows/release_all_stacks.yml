@@ -119,6 +119,16 @@ jobs:
               jq \
               --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:cloudfrontCertificate:Arn" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          SHORT_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:shortCloudfrontDomain:Name" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          FULL_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+
+
            if [ -z "${CLOUDFRONT_CERT_ARN}" ]; then
             echo "CLOUDFRONT_CERT_ARN not found - setting redeploy stateful stack to true"
             CLOUDFRONT_CERT_ARN="UNKNOWN"
@@ -131,16 +141,6 @@ jobs:
             echo "FULL_CLOUDFRONT_DOMAIN not found - setting redeploy stateful stack to true"
             FULL_CLOUDFRONT_DOMAIN="UNKNOWN"
           fi
-
-          SHORT_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
-              jq \
-              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:shortCloudfrontDomain:Name" \
-              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-          FULL_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
-              jq \
-              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" \
-              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-
 
           echo "REDEPLOY_STATEFUL_STACK=$REDEPLOY_STATEFUL_STACK"
           echo "CLOUDFRONT_DISTRIBUTION_ARN=$CLOUDFRONT_DISTRIBUTION_ARN"

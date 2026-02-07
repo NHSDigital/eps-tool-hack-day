@@ -40,7 +40,7 @@ jobs:
     needs: [get_commit_id]
     uses: ./.github/workflows/cdk_package_code.yml
     with:
-      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      VERSION_NUMBER: "hack"
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
 
   release_dev:
@@ -49,7 +49,7 @@ jobs:
     with:
       SERVICE_NAME: cpt-ui
       TARGET_ENVIRONMENT: dev
-      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      VERSION_NUMBER: "hack"
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
       LOG_LEVEL: "DEBUG"
       ROUTE53_EXPORT_NAME: EPS

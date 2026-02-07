@@ -140,6 +140,7 @@ jobs:
       - name: Deploy UsCertStack
         run: npm run cdk-deploy --workspace packages/cdk
         shell: bash
+        working-directory: .build
         env:
           CDK_APP_NAME: "HackApp"
           CDK_STACK_NAME: "UsCertsStack"
@@ -161,6 +162,7 @@ jobs:
           CDK_CONFIG_cloudfrontDistributionId: ${{ steps.check_redeploy_stateful_stack.outputs.CLOUDFRONT_DISTRIBUTION_ID }}
           REQUIRE_APPROVAL: "never"
       - name: Deploy HackStack
+        working-directory: .build
         run: |
           CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
           CDK_CONFIG_cloudfrontCertArn=$(echo "$CF_US_EXPORTS" | \
@@ -267,6 +269,7 @@ jobs:
 
       - name: Redeploy HackStack
         if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
+        working-directory: .build
         run: |
           CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)

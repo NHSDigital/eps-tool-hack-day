@@ -146,9 +146,6 @@ export class CloudfrontBehaviors extends Construct{
       sourceFileName: "s3StaticContentRootSlashRedirect.js"
     })
 
-    /* Add dependency on previous function to force them to build one by one to avoid aws limits
-    on how many can be created simultaneously */
-    s3StaticContentRootSlashRedirect.node.addDependency(s3JwksUriRewriteFunction)
 
 
     const additionalBehaviors = {

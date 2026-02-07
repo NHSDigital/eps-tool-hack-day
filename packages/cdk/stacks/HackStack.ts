@@ -185,6 +185,10 @@ export class HackStack extends Stack {
       value: cloudfrontDistribution.distribution.distributionArn,
       exportName: `${props.stackName}:cloudfrontDistribution:Arn`
     })
+    new CfnOutput(this, "KeyValueStoreArn", {
+      value: cloudfrontBehaviors.keyValueStore.keyValueStoreArn,
+      exportName: `${props.stackName}:KeyValueStore:Arn`
+    })
 
     // Token mapping table
     addNagSuppressions(this)

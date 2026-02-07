@@ -242,6 +242,7 @@ export class CloudfrontBehaviors extends Construct{
     }
 
     //Outputs
+    this.additionalBehaviors = additionalBehaviors
     this.s3404UriRewriteFunction = s3404UriRewriteFunction
     this.s3404ModifyStatusCodeFunction = s3404ModifyStatusCodeFunction
     this.s3StaticContentUriRewriteFunction = s3StaticContentUriRewriteFunction

@@ -11,7 +11,7 @@ guard-%:
 
 .PHONY: install build test publish release clean
 
-install: install-node install-hooks
+install: install-node
 
 
 install-node:

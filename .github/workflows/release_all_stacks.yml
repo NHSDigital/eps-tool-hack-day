@@ -193,15 +193,15 @@ jobs:
           CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
           CDK_CONFIG_cloudfrontCertArn=$(echo "$CF_US_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:cloudfrontCertificate:Arn" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-us-certs:cloudfrontCertificate:Arn" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           CDK_CONFIG_shortCloudfrontDomain=$(echo "$CF_US_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:shortCloudfrontDomain:Name" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-us-certs:shortCloudfrontDomain:Name" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           CDK_CONFIG_fullCloudfrontDomain=$(echo "$CF_US_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           npm run cdk-deploy --workspace packages/cdk
         shell: bash
@@ -231,7 +231,7 @@ jobs:
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
           CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
           SERVICE_NAME='${{ inputs.SERVICE_NAME }}'
-          fullCloudfrontDomain=$(echo "$CF_US_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          fullCloudfrontDomain=$(echo "$CF_US_EXPORTS" | jq  --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
           {
             echo "fullCloudfrontDomain=${fullCloudfrontDomain}"

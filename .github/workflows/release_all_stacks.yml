@@ -310,24 +310,29 @@ jobs:
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
           CDK_CONFIG_cloudfrontCertArn=$(echo "$CF_US_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:cloudfrontCertificate:Arn" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-us-certs:cloudfrontCertificate:Arn" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           CDK_CONFIG_shortCloudfrontDomain=$(echo "$CF_US_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:shortCloudfrontDomain:Name" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-us-certs:shortCloudfrontDomain:Name" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           CDK_CONFIG_fullCloudfrontDomain=$(echo "$CF_US_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           CDK_CONFIG_cloudfrontDistributionId=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}:cloudfrontDistribution:Id" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateful-resources:cloudfrontDistribution:Id" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           CDK_CONFIG_cloudfrontDistributionArn=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}:cloudfrontDistribution:Arn" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateful-resources:cloudfrontDistribution:Arn" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          export CDK_CONFIG_cloudfrontCertArn
+          export CDK_CONFIG_shortCloudfrontDomain
+          export CDK_CONFIG_fullCloudfrontDomain
+          export CDK_CONFIG_cloudfrontDistributionId
+          export CDK_CONFIG_cloudfrontDistributionArn
           npm run cdk-deploy --workspace packages/cdk
         shell: bash
         env:

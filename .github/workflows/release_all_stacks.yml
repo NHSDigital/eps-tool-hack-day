@@ -170,6 +170,7 @@ jobs:
         env:
           CDK_APP_NAME: "HackApp"
           CDK_STACK_NAME: "UsCertsStack"
+          CDK_CONFIG_serviceName: "${{ inputs.SERVICE_NAME }}"
           CDK_CONFIG_stackName: "${{ inputs.SERVICE_NAME }}-us-certs"
           CDK_CONFIG_versionNumber: "${{ inputs.VERSION_NUMBER }}"
           CDK_CONFIG_commitId: "${{ inputs.COMMIT_ID }}"
@@ -212,6 +213,7 @@ jobs:
           AWS_MAX_ATTEMPTS: 20
           CDK_APP_NAME: "HackApp"
           CDK_STACK_NAME: "HackStack"
+          CDK_CONFIG_serviceName: "${{ inputs.SERVICE_NAME }}"
           CDK_CONFIG_stackName: "${{ inputs.SERVICE_NAME }}-hack-stack"
           CDK_CONFIG_versionNumber: "${{ inputs.VERSION_NUMBER }}"
           CDK_CONFIG_commitId: "${{ inputs.COMMIT_ID }}"
@@ -332,6 +334,7 @@ jobs:
           AWS_MAX_ATTEMPTS: 20
           CDK_APP_NAME: "HackApp"
           CDK_STACK_NAME: "HackStack"
+          CDK_CONFIG_serviceName: "${{ inputs.SERVICE_NAME }}"
           CDK_CONFIG_stackName: "${{ inputs.SERVICE_NAME }}-hack-stack"
           CDK_CONFIG_versionNumber: "${{ inputs.VERSION_NUMBER }}"
           CDK_CONFIG_commitId: "${{ inputs.COMMIT_ID }}"

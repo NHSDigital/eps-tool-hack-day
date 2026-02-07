@@ -123,6 +123,14 @@ jobs:
             echo "CLOUDFRONT_CERT_ARN not found - setting redeploy stateful stack to true"
             CLOUDFRONT_CERT_ARN="UNKNOWN"
           fi
+           if [ -z "${SHORT_CLOUDFRONT_DOMAIN}" ]; then
+            echo "SHORT_CLOUDFRONT_DOMAIN not found - setting redeploy stateful stack to true"
+            SHORT_CLOUDFRONT_DOMAIN="UNKNOWN"
+          fi
+           if [ -z "${FULL_CLOUDFRONT_DOMAIN}" ]; then
+            echo "FULL_CLOUDFRONT_DOMAIN not found - setting redeploy stateful stack to true"
+            FULL_CLOUDFRONT_DOMAIN="UNKNOWN"
+          fi
 
           SHORT_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
               jq \

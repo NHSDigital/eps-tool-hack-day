@@ -63,14 +63,6 @@ export class CloudfrontBehaviors extends Construct{
         {
           key: "api_path",
           value: "/api"
-        },
-        {
-          key: "oauth2_proxyPath",
-          value: "/oauth2"
-        },
-        {
-          key: "jwks_rewrite",
-          value: "jwks.json"
         }
       ]}))
     })
@@ -148,35 +140,6 @@ export class CloudfrontBehaviors extends Construct{
     on how many can be created simultaneously */
     apiGatewayStripPathFunction.node.addDependency(s3StaticContentUriRewriteFunction)
 
-    const oauth2GatewayStripPathFunction = new CloudfrontFunction(this, "OAuth2GatewayStripPathFunction", {
-      functionName: `${props.serviceName}-OAuth2GatewayStripPathFunction`,
-      sourceFileName: "genericStripPathUriRewrite.js",
-      keyValueStore: keyValueStore,
-      codeReplacements: [
-        {
-          valueToReplace: "PATH_PLACEHOLDER",
-          replacementValue: "oauth2_proxyPath"
-        }
-      ]
-    })
-    /* Add dependency on previous function to force them to build one by one to avoid aws limits
-    on how many can be created simultaneously */
-    oauth2GatewayStripPathFunction.node.addDependency(apiGatewayStripPathFunction)
-
-    const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
-      functionName: `${props.serviceName}-s3JwksUriRewriteFunction`,
-      sourceFileName: "genericS3FixedObjectUriRewrite.js",
-      keyValueStore: keyValueStore,
-      codeReplacements: [
-        {
-          valueToReplace: "OBJECT_PLACEHOLDER",
-          replacementValue: "jwks_rewrite"
-        }
-      ]
-    })
-    /* Add dependency on previous function to force them to build one by one to avoid aws limits
-    on how many can be created simultaneously */
-    s3JwksUriRewriteFunction.node.addDependency(oauth2GatewayStripPathFunction)
 
     const s3StaticContentRootSlashRedirect = new CloudfrontFunction(this, "s3StaticContentRootSlashRedirect", {
       functionName: `${props.serviceName}-s3StaticContentRootSlashRedirect`,

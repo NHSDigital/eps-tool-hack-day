@@ -77,11 +77,11 @@ jobs:
           CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
           CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}:cloudfrontDistribution:Id" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateful-resources:cloudfrontDistribution:Id" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           CLOUDFRONT_DISTRIBUTION_ARN=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}:cloudfrontDistribution:Arn" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateful-resources:cloudfrontDistribution:Arn" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           REDEPLOY_STATEFUL_STACK="false"
 
@@ -117,15 +117,15 @@ jobs:
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           CLOUDFRONT_CERT_ARN=$(echo "$CF_US_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:cloudfrontCertificate:Arn" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-us-certs:cloudfrontCertificate:Arn" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           SHORT_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:shortCloudfrontDomain:Name" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-us-certs:shortCloudfrontDomain:Name" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           FULL_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
 

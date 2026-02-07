@@ -15,7 +15,7 @@ import {
  */
 
 export interface PolicyProps {
-  cloudfrontDistributionId: string
+  cloudfrontDistributionId: string | undefined
   deploymentRole: IPrincipal
   region: string
 }

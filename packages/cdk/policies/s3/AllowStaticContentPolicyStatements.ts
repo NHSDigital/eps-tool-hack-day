@@ -2,6 +2,7 @@ import {
   AccountRootPrincipal,
   Effect,
   IRole,
+  PolicyDocument,
   PolicyStatement,
   ServicePrincipal
 } from "aws-cdk-lib/aws-iam"
@@ -28,6 +29,26 @@ export class AllowStaticContentPolicyStatements {
   public constructor(props: PolicyProps){
 
     const accountRootPrincipal = new AccountRootPrincipal()
+    const policyDocument = new PolicyDocument({
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          principals: [accountRootPrincipal],
+          actions: ["kms:*"],
+          resources: ["*"]
+        }),
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          principals: [props.deploymentRole],
+          actions: [
+            "kms:Encrypt",
+            "kms:GenerateDataKey*"
+          ],
+          resources:["*"]
+        })
+      ]
+    })
+
     const cloudfrontAccessPolicyStatement = new PolicyStatement({
       effect: Effect.ALLOW,
       principals: [new ServicePrincipal("cloudfront.amazonaws.com")],

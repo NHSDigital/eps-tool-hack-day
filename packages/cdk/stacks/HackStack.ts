@@ -123,6 +123,7 @@ export class HackStack extends Stack {
       }
     )
     const apiGatewayOrigin = new RestApiOrigin(apiGateway.apiGateway, {
+      originPath: `/${apiGateway.apiGateway.deploymentStage.stageName}`,
       customHeaders: {
         "destination-api-apigw-id": apiGateway.apiGateway.restApiId
       }
@@ -131,7 +132,7 @@ export class HackStack extends Stack {
       originRequestPolicyName: `${props.serviceName}-ApiGatewayRequestPolicy`,
       cookieBehavior: OriginRequestCookieBehavior.all(),
       headerBehavior: OriginRequestHeaderBehavior.all(),
-      queryStringBehavior: OriginRequestQueryStringBehavior.all()
+      queryStringBehavior: OriginRequestQueryStringBehavior.all(),
     })
     const cloudfrontBehaviors = new CloudfrontBehaviors(this, "CloudfrontBehaviors", {
       serviceName: props.serviceName,

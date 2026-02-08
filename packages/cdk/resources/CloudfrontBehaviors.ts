@@ -164,14 +164,13 @@ export class CloudfrontBehaviors extends Construct{
         origin: props.apiGatewayOrigin,
         allowedMethods: AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        originRequestPolicy: props.apiGatewayRequestPolicy,
         cachePolicy: CachePolicy.CACHING_DISABLED,
         functionAssociations: [
           {
             function: apiGatewayStripPathFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ],
+        ]
       },
       "/500.html": { // matches exactly <url>/500.html and will only serve the 500.html page (via cf function)
         origin: props.staticContentBucketOrigin,

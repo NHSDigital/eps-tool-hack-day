@@ -115,7 +115,8 @@ export class HackStack extends Stack {
     })
     const apiMethods = new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
       executePolices: [
-        functions.fooLambda.executionPolicy
+        functions.fooLambda.executionPolicy,
+        functions.createLambda.executionPolicy
       ],
       restAPiGatewayRole: apiGateway.apiGatewayRole,
       restApiGateway: apiGateway.apiGateway,

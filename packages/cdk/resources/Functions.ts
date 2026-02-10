@@ -69,7 +69,9 @@ export class ApiFunctions extends Construct {
       projectBaseDir: baseDir,
       packageBasePath: "packages/poll",
       entryPoint: "src/handler.ts",
-      environmentVariables: {},
+      environmentVariables: {
+        PROCESSING_STATUS_TABLE_NAME: props.processingStatusTable.processStatus.tableName
+      },
       logRetentionInDays: 30,
       logLevel: "DEBUG",
       version: props.version,

@@ -70,7 +70,9 @@ export default function Home() {
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
+      console.log("Rx msg:", event.data);
       if (event.data && event.data.jsoncrackEmbedLoaded) {
+        console.log("Embed loaded, sending JSON");
         sendToEmbed(jsonString);
       }
     };
@@ -80,6 +82,7 @@ export default function Home() {
 
   const sendToEmbed = (j: string) => {
     if (embedRef.current) {
+      console.log("Sending to embed", j ? "with string" : "with result fallback");
       // Use the provided string directly, or stringify the result object if no string is provided
       const json = j || JSON.stringify(result);
       const options = {
@@ -93,8 +96,21 @@ export default function Home() {
         },
         "*"
       );
+    } else {
+      console.warn("Embed ref is null");
     }
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (jsonString) {
+        console.log("Debounced update triggered");
+        sendToEmbed(jsonString);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [jsonString]);
 
   if (result) {
     return (
@@ -157,6 +173,10 @@ export default function Home() {
                       width="100%"
                       height="100%"
                       style={{ border: "none" }}
+                      onLoad={() => {
+                        console.log("Iframe loaded, triggering send");
+                        sendToEmbed(jsonString);
+                      }}
                     ></iframe>
                   </div>
                 </div>

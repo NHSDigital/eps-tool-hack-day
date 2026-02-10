@@ -6,7 +6,7 @@ ARG ASDF_VERSION
 COPY .tool-versions.asdf /tmp/.tool-versions.asdf
 
 # Add amd64 architecture if on arm64
-RUN if [ "$TARGETARCH" == "arm64" ] || [ "$TARGETARCH" == "aarch64" ]; then dpkg --add-architecture amd64; fi
+RUN if [ "$TARGETARCH" == "arm64" ] || [ "$TARGETARCH" == "aarch64" ]; then dpkg --add-architecture arm64; fi
 
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \

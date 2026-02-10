@@ -1,20 +1,24 @@
 import {Logger} from "@aws-lambda-powertools/logger"
+import {InvokeCommand, LambdaClient, LogType} from "@aws-sdk/client-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import errorHandler from "@nhs/fhir-middy-error-handler"
 
+import {randomUUID, UUID} from "node:crypto"
+
 const logger = new Logger({serviceName: "status"})
 
-/**
- *
- * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
- * @param {Object} _event - API Gateway Lambda Proxy Input Format
- *
- * Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
- * @returns {Object} object - API Gateway Lambda Proxy Output Format
- *
- */
+const invoke = async (funcName: string, payload: any) => {
+  const client = new LambdaClient({});
+  const command = new InvokeCommand({
+    FunctionName: funcName,
+    Payload: JSON.stringify(payload)
+  });
+
+  // We don't care about the response, so don't await this
+  client.send(command)
+};
 
 const lambdaHandler = async (event: any): Promise<any> => {
   logger.appendKeys({
@@ -25,15 +29,16 @@ const lambdaHandler = async (event: any): Promise<any> => {
     "apigw-request-id": event.requestContext.requestId
   })
 
-  const commitId = process.env.COMMIT_ID
-  const versionNumber = process.env.VERSION_NUMBER
+  // Create an empty record in dynamo with a new uuid
+  const uuid: UUID = randomUUID()
+  invoke(process.env.PROCESSING_LAMBDA_NAME!, {id: uuid})
 
-
-  const statusBody = {commitId: commitId, versionNumber: versionNumber}
+  // immediately return 200 and the newly created ID
+  const createBody = {id: uuid}
 
   return {
     statusCode: 200,
-    body: JSON.stringify(statusBody),
+    body: JSON.stringify(createBody),
     headers: {
       "Content-Type": "application/health+json",
       "Cache-Control": "no-cache"

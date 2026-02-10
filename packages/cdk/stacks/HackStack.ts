@@ -94,6 +94,9 @@ export class HackStack extends Stack {
       wafLogGroupName: `aws-waf-logs-${props.serviceName}-apigw`,
       stackName: this.stackName
     })
+    const dyna = new Dynamodb(this, "Dynamodb", {
+      stackName: props.stackName
+    })
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -107,7 +110,8 @@ export class HackStack extends Stack {
       serviceName: props.serviceName,
       stackName: props.stackName,
       version: "1.0.0",
-      commitId: "abc123"
+      commitId: "abc123",
+      processingStatusTable: dyna
     })
     const apiMethods = new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
       executePolices: [
@@ -178,9 +182,6 @@ export class HackStack extends Stack {
       ]
     })
 
-    const dyna = new Dynamodb(this, "Dynamodb", {
-      stackName: props.stackName
-    })
 
     // Outputs
 

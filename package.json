@@ -22,7 +22,8 @@
         "packages/cdk",
         "packages/foo",
         "packages/process",
-        "packages/create"
+        "packages/create",
+        "packages/poll"
     ],
     "devDependencies": {
         "@eslint/js": "^9.38.0",

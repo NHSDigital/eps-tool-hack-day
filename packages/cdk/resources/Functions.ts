@@ -1,6 +1,6 @@
 import {Construct} from "constructs"
 import {TypescriptLambdaFunction} from "@nhsdigital/eps-cdk-constructs"
-import { resolve } from "node:path"
+import {resolve} from "node:path"
 const baseDir = resolve(__dirname, "../../..")
 // Interface for properties needed to create API functions
 export interface ApiFunctionsProps {
@@ -15,6 +15,7 @@ export interface ApiFunctionsProps {
  */
 export class ApiFunctions extends Construct {
   public readonly fooLambda: TypescriptLambdaFunction
+  public readonly createLambda: TypescriptLambdaFunction
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
@@ -29,7 +30,22 @@ export class ApiFunctions extends Construct {
       version: props.version,
       commitId: props.commitId
     })
+
+    const createLambda = new TypescriptLambdaFunction(this, "CreateLambda", {
+      functionName: `${props.stackName}-CreateLambda`,
+      projectBaseDir: baseDir,
+      packageBasePath: "packages/create",
+      entryPoint: "src/handler.ts",
+      environmentVariables: {},
+      logRetentionInDays: 30,
+      logLevel: "DEBUG",
+      version: props.version,
+      commitId: props.commitId
+    })
+
+
     // Outputs
     this.fooLambda = fooLambda
+    this.createLambda = createLambda
   }
 }

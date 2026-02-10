@@ -11,18 +11,18 @@ import {StaticContentBucket} from "../resources/StaticContentBucket"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {Role} from "aws-cdk-lib/aws-iam"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
-import { Key } from "aws-cdk-lib/aws-kms"
-import { Stream } from "aws-cdk-lib/aws-kinesis"
-import { ukRegionLogGroups } from "../resources/ukRegionLogGroups"
-import { RestApiGateway } from "../resources/RestApiGateway"
-import { RestApiGatewayMethods } from "../resources/RestApiGateway/RestApiGatewayMethods"
-import { RestApiOrigin, S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins"
-import { AccessLevel, AllowedMethods, FunctionEventType, OriginRequestCookieBehavior, OriginRequestHeaderBehavior, OriginRequestPolicy, OriginRequestQueryStringBehavior, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront"
-import { CloudfrontBehaviors } from "../resources/CloudfrontBehaviors"
-import { CloudfrontDistribution } from "../resources/CloudfrontDistribution"
-import { getConfigFromEnvVar } from "@nhsdigital/eps-cdk-constructs"
-import { ApiFunctions } from "../resources/Functions"
-import { addNagSuppressions } from "./nagSuppression"
+import {Key} from "aws-cdk-lib/aws-kms"
+import {Stream} from "aws-cdk-lib/aws-kinesis"
+import {ukRegionLogGroups} from "../resources/ukRegionLogGroups"
+import {RestApiGateway} from "../resources/RestApiGateway"
+import {RestApiGatewayMethods} from "../resources/RestApiGateway/RestApiGatewayMethods"
+import {RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
+import {AccessLevel, AllowedMethods, FunctionEventType, OriginRequestCookieBehavior, OriginRequestHeaderBehavior, OriginRequestPolicy, OriginRequestQueryStringBehavior, ViewerProtocolPolicy} from "aws-cdk-lib/aws-cloudfront"
+import {CloudfrontBehaviors} from "../resources/CloudfrontBehaviors"
+import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
+import {getConfigFromEnvVar} from "@nhsdigital/eps-cdk-constructs"
+import {ApiFunctions} from "../resources/Functions"
+import {addNagSuppressions} from "./nagSuppression"
 
 export interface HackStackProps extends StackProps {
   readonly serviceName: string
@@ -37,7 +37,7 @@ export interface HackStackProps extends StackProps {
  */
 
 export class HackStack extends Stack {
-  public constructor(scope: App, id: string, props: HackStackProps){
+  public constructor(scope: App, id: string, props: HackStackProps) {
     super(scope, id, props)
 
     // Context
@@ -114,7 +114,8 @@ export class HackStack extends Stack {
       ],
       restAPiGatewayRole: apiGateway.apiGatewayRole,
       restApiGateway: apiGateway.apiGateway,
-      fooLambda: functions.fooLambda.function
+      fooLambda: functions.fooLambda.function,
+      createLambda: functions.createLambda.function
     })
     const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
       staticContentBucket.bucket,
@@ -141,7 +142,7 @@ export class HackStack extends Stack {
       apiGatewayRequestPolicy: apiGatewayRequestPolicy,
       staticContentBucketOrigin: staticContentBucketOrigin,
     })
-    
+
     // --- Distribution
     const cloudfrontDistribution = new CloudfrontDistribution(this, "CloudfrontDistribution", {
       serviceName: props.serviceName,

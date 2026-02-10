@@ -51,5 +51,8 @@
         "conventional-changelog-eslint": "^6.0.0",
         "esbuild": "^0.27.2",
         "hack": "^0.8.1"
+    },
+    "optionalDependencies": {
+        "@rollup/rollup-darwin-arm64": "^4.57.1"
     }
 }

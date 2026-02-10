@@ -84,6 +84,26 @@ export const addNagSuppressions = (stack: Stack) => {
       }
     ]
   )
+  safeAddNagSuppression(
+    stack,
+    "/HackStack/Dynamodb/ProcessStatusWriteManagedPolicy/Resource",
+    [
+      {
+        id: "AwsSolutions-IAM5",
+        reason: "this is for hack day stack"
+      }
+    ]
+  )
+  safeAddNagSuppression(
+    stack,
+    "/HackStack/Dynamodb/ProcessStatusReadManagedPolicy/Resource",
+    [
+      {
+        id: "AwsSolutions-IAM5",
+        reason: "this is for hack day stack"
+      }
+    ]
+  )
 
 }
 

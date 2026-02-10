@@ -15,8 +15,7 @@ const lambdaHandler = async (event: any): Promise<any> => {
   const preparedPrescription = await preparePrescription(1)
   const commitId = process.env.COMMIT_ID
   const versionNumber = process.env.VERSION_NUMBER
-
-
+  logger.info("Prepared prescription", {preparePrescription})
   const statusBody = {commitId: commitId, versionNumber: versionNumber}
 
   return {

@@ -104,6 +104,26 @@ export const addNagSuppressions = (stack: Stack) => {
       }
     ]
   )
+  safeAddNagSuppression(
+    stack,
+    "/HackStack/ApiGateway/ApiGateway/Default/create/GET/Resource",
+    [
+      {
+        id: "AwsSolutions-APIG4",
+        reason: "this is for hack day stack - no auth is fine (for now)"
+      }
+    ]
+  )
+  safeAddNagSuppression(
+    stack,
+    "/HackStack/ApiGateway/ApiGateway/Default/create/GET/Resource",
+    [
+      {
+        id: "AwsSolutions-COG4",
+        reason: "this is for hack day stack - no auth is fine"
+      }
+    ]
+  )
 
 }
 

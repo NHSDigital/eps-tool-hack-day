@@ -14,6 +14,7 @@ export interface RestApiGatewayMethodsProps {
   readonly restApiGateway: RestApi
   readonly fooLambda: NodejsFunction
   readonly createLambda: NodejsFunction
+  readonly pollLambda: NodejsFunction
 }
 
 /**
@@ -43,6 +44,13 @@ export class RestApiGatewayMethods extends Construct {
 
     const createPrescriptionLambdaResource = props.restApiGateway.root.addResource("create")
     createPrescriptionLambdaResource.addMethod("GET", new LambdaIntegration(props.createLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }), {
+      authorizationType: AuthorizationType.NONE,
+    })
+
+    const pollPrescriptionLambdaResource = props.restApiGateway.root.addResource("poll")
+    pollPrescriptionLambdaResource.addMethod("GET", new LambdaIntegration(props.pollLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
       authorizationType: AuthorizationType.NONE,

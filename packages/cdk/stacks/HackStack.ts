@@ -121,7 +121,8 @@ export class HackStack extends Stack {
       restAPiGatewayRole: apiGateway.apiGatewayRole,
       restApiGateway: apiGateway.apiGateway,
       fooLambda: functions.fooLambda.function,
-      createLambda: functions.createLambda.function
+      createLambda: functions.createLambda.function,
+      pollLambda: functions.pollLambda.function,
     })
     const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
       staticContentBucket.bucket,

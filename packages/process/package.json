@@ -19,7 +19,11 @@
     "@middy/core": "^7.0.2",
     "@middy/input-output-logger": "^7.0.2",
     "@nhs/fhir-middy-error-handler": "^2.1.71",
-    "@nhsdigital/eps-spine-client": "^2.1.78"
+    "@nhsdigital/eps-spine-client": "^2.1.78",
+    "axios": "^1.7.9",
+    "axios-cookiejar-support": "^6.0.4",
+    "jsdom": "^25.0.1",
+    "tough-cookie": "^5.1.2"
   },
   "devDependencies": {
     "axios-mock-adapter": "^2.1.0",

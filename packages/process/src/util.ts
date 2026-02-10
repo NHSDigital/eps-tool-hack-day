@@ -66,7 +66,7 @@ function setBundleIdAndValue(data: any, resourceType = "others") {
   return identifierValue
 }
 
-function updateMessageHeader(entry, site) {
+function updateMessageHeader(entry: any, site: any) {
   if (entry.resource.resourceType === "MessageHeader") {
     entry.fullUrl = "urn:uuid:" + crypto.randomUUID()
     entry.resource.destination[0].receiver.identifier.value = site

@@ -68,22 +68,9 @@ export default function Home() {
 
   const embedRef = useRef<HTMLIFrameElement>(null);
 
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      console.log("Rx msg:", event.data);
-      if (event.data && event.data.jsoncrackEmbedLoaded) {
-        console.log("Embed loaded, sending JSON");
-        sendToEmbed(jsonString);
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [jsonString]);
-
   const sendToEmbed = (j: string) => {
     if (embedRef.current) {
       console.log("Sending to embed", j ? "with string" : "with result fallback");
-      // Use the provided string directly, or stringify the result object if no string is provided
       const json = j || JSON.stringify(result);
       const options = {
         theme: "light",
@@ -100,6 +87,18 @@ export default function Home() {
       console.warn("Embed ref is null");
     }
   };
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      console.log("Rx msg:", event.data);
+      if (event.data && event.data.jsoncrackEmbedLoaded) {
+        console.log("Embed loaded, sending JSON");
+        sendToEmbed(jsonString);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [jsonString]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -173,6 +172,7 @@ export default function Home() {
                       width="100%"
                       height="100%"
                       style={{ border: "none" }}
+                      sandbox="allow-scripts allow-popups allow-same-origin"
                       onLoad={() => {
                         console.log("Iframe loaded, triggering send");
                         sendToEmbed(jsonString);

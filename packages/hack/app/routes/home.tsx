@@ -25,7 +25,9 @@ export default function Home() {
           <div className="nhsuk-grid-row">
             <div className="nhsuk-grid-column-two-thirds">
               <h1>EPS Tool Hack Day</h1>
-              <Button href="/create-prescription">Create a prescription</Button>
+              <Button onClick={() => fetch("https://hackapp-pr-11.dev.eps.national.nhs.uk/api/create ", { method: "POST" })}>
+                Create a prescription
+              </Button>
             </div>
           </div>
         </main>

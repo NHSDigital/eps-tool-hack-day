@@ -1,8 +1,8 @@
 {
-  "name": "status",
+  "name": "create",
   "version": "1.0.0",
-  "description": "Lambda of the _status endpoint",
-  "main": "status.js",
+  "description": "Lambda of the create endpoint",
+  "main": "handler.js",
   "author": "NHS Digital",
   "license": "MIT",
   "scripts": {

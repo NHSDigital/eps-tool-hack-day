@@ -21,7 +21,8 @@
         "packages/hack",
         "packages/cdk",
         "packages/foo",
-        "packages/process"
+        "packages/process",
+        "packages/create"
     ],
     "devDependencies": {
         "@eslint/js": "^9.38.0",

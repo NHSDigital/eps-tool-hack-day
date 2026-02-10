@@ -1,6 +1,8 @@
-import { Header, Container, Button } from "nhsuk-react-components";
-import { useState, useRef, useEffect } from "react";
-import Spinner from "../components/Spinner";
+import { Container } from "nhsuk-react-components";
+import { useState } from "react";
+import AppHeader from "../components/AppHeader";
+import CreatePrescription from "../components/CreatePrescription";
+import PrescriptionViewer from "../components/PrescriptionViewer";
 
 export function meta() {
   return [
@@ -12,15 +14,9 @@ export function meta() {
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [prescriptionId, setPrescriptionId] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
-  const [jsonString, setJsonString] = useState("");
-
-  useEffect(() => {
-    if (result) {
-      setJsonString(JSON.stringify(result, null, 2));
-    }
-  }, [result]);
 
   const pollStatus = async (id: string) => {
     // Simulate processing state
@@ -64,123 +60,19 @@ export default function Home() {
     setStatusMessage("");
   };
 
-
-
-  const embedRef = useRef<HTMLIFrameElement>(null);
-
-  const sendToEmbed = (j: string) => {
-    if (embedRef.current) {
-      console.log("Sending to embed", j ? "with string" : "with result fallback");
-      const json = j || JSON.stringify(result);
-      const options = {
-        theme: "light",
-        direction: "RIGHT",
-      };
-      embedRef.current.contentWindow?.postMessage(
-        {
-          json,
-          options,
-        },
-        "*"
-      );
-    } else {
-      console.warn("Embed ref is null");
-    }
-  };
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      console.log("Rx msg:", event.data);
-      if (event.data && event.data.jsoncrackEmbedLoaded) {
-        console.log("Embed loaded, sending JSON");
-        sendToEmbed(jsonString);
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [jsonString]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (jsonString) {
-        console.log("Debounced update triggered");
-        sendToEmbed(jsonString);
-      }
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [jsonString]);
-
   if (result) {
     return (
       <>
-        {/* @ts-expect-error - Header types mismatch with React 19 */}
-        <Header>
-          <Header.Container>
-            <div className="nhsuk-header__logo">
-              <a className="nhsuk-header__link" href="/" aria-label="NHS homepage">
-                <img src="/site/nhs-rebranded.png" alt="NHS Rebranded" style={{ height: "50px" }} />
-              </a>
-            </div>
-          </Header.Container>
-        </Header>
+        <AppHeader />
         <Container>
-          <main className="nhsuk-main-wrapper" id="maincontent" role="main" style={{ maxWidth: "1280px", margin: "0 auto" }}>
+          <main className="nhsuk-main-wrapper" id="maincontent" role="main" style={{ maxWidth: "96%", margin: "0 auto" }}>
             <div className="nhsuk-grid-row">
               <div className="nhsuk-grid-column-full">
-                <h1>Prescription Created</h1>
-                <Button onClick={handleBack} style={{ marginBottom: "20px" }}>
-                  Back to Home
-                </Button>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "auto 1fr", gap: "20px", height: "600px" }}>
-
-                  {/* Header Left */}
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <h3 style={{ margin: 0 }}>Bundle JSON</h3>
-                  </div>
-
-                  {/* Header Right */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3 style={{ margin: 0 }}>Visualiser</h3>
-                  </div>
-
-                  {/* Content Left */}
-                  <div style={{ border: "1px solid #ccc", display: "flex", flexDirection: "column" }}>
-                    <textarea
-                      style={{
-                        flex: 1,
-                        width: "100%",
-                        resize: "none",
-                        padding: "10px",
-                        fontFamily: "monospace",
-                        border: "none",
-                        outline: "none",
-                        backgroundColor: "#f0f0f0"
-                      }}
-                      value={jsonString}
-                      onChange={(e) => setJsonString(e.target.value)}
-                    />
-                  </div>
-
-                  {/* Content Right */}
-                  <div style={{ border: "1px solid #ccc" }}>
-                    <iframe
-                      ref={embedRef}
-                      id="jsoncrackEmbed"
-                      src="https://jsoncrack.com/widget"
-                      width="100%"
-                      height="100%"
-                      style={{ border: "none" }}
-                      sandbox="allow-scripts allow-popups allow-same-origin"
-                      onLoad={() => {
-                        console.log("Iframe loaded, triggering send");
-                        sendToEmbed(jsonString);
-                      }}
-                    ></iframe>
-                  </div>
-                </div>
-
+                <PrescriptionViewer
+                  result={result}
+                  setResult={setResult}
+                  onBack={handleBack}
+                />
               </div>
             </div>
           </main>
@@ -191,34 +83,15 @@ export default function Home() {
 
   return (
     <>
-      {/* @ts-expect-error - Header types mismatch with React 19 */}
-      <Header>
-        <Header.Container>
-          <div className="nhsuk-header__logo">
-            <a className="nhsuk-header__link" href="/" aria-label="NHS homepage">
-              <img src="/site/nhs-rebranded.png" alt="NHS Rebranded" style={{ height: "50px" }} />
-            </a>
-          </div>
-        </Header.Container>
-      </Header>
+      <AppHeader />
       <Container>
         <main className="nhsuk-main-wrapper" id="maincontent" role="main">
           <div className="nhsuk-grid-row">
-            <div className="nhsuk-grid-column-two-thirds">
-              <h1>EPS Tool Hack Day</h1>
-
-              {!loading && (
-                <Button onClick={handleCreatePrescription}>
-                  Create a prescription
-                </Button>
-              )}
-
-              {loading && (
-                <div style={{ textAlign: "center", marginTop: "20px" }}>
-                  <Spinner message={statusMessage} />
-                </div>
-              )}
-            </div>
+            <CreatePrescription
+              loading={loading}
+              statusMessage={statusMessage}
+              onCreate={handleCreatePrescription}
+            />
           </div>
         </main>
       </Container>

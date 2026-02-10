@@ -13,11 +13,11 @@ const invoke = async (funcName: string, payload: any) => {
   const client = new LambdaClient({});
   const command = new InvokeCommand({
     FunctionName: funcName,
+    InvocationType: "Event", // asynchronous invocation
     Payload: JSON.stringify(payload)
   });
 
-  // We don't care about the response, so don't await this
-  client.send(command)
+  await client.send(command)
 };
 
 const lambdaHandler = async (event: any): Promise<any> => {
@@ -32,7 +32,7 @@ const lambdaHandler = async (event: any): Promise<any> => {
   // Create an empty record in dynamo with a new uuid
   const uuid: UUID = randomUUID()
   logger.info("invoking processing lambda", {processingLambdaName: process.env.PROCESSING_LAMBDA_NAME, id: uuid})
-  invoke(process.env.PROCESSING_LAMBDA_NAME!, {id: uuid})
+  await invoke(process.env.PROCESSING_LAMBDA_NAME!, {id: uuid})
 
   // immediately return 200 and the newly created ID
   const createBody = {id: uuid}

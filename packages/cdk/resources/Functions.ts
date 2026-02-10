@@ -32,18 +32,6 @@ export class ApiFunctions extends Construct {
       commitId: props.commitId
     })
 
-    const createLambda = new TypescriptLambdaFunction(this, "CreateLambda", {
-      functionName: `${props.stackName}-CreateLambda`,
-      projectBaseDir: baseDir,
-      packageBasePath: "packages/create",
-      entryPoint: "src/handler.ts",
-      environmentVariables: {},
-      logRetentionInDays: 30,
-      logLevel: "DEBUG",
-      version: props.version,
-      commitId: props.commitId
-    })
-
     const processLambda = new TypescriptLambdaFunction(this, "ProcessLambda", {
       functionName: `${props.stackName}-ProcessLambda`,
       projectBaseDir: baseDir,
@@ -56,6 +44,19 @@ export class ApiFunctions extends Construct {
       commitId: props.commitId
     })
 
+    const createLambda = new TypescriptLambdaFunction(this, "CreateLambda", {
+      functionName: `${props.stackName}-CreateLambda`,
+      projectBaseDir: baseDir,
+      packageBasePath: "packages/create",
+      entryPoint: "src/handler.ts",
+      environmentVariables: {
+        PROCESSING_LAMBDA_NAME: processLambda.function.functionName
+      },
+      logRetentionInDays: 30,
+      logLevel: "DEBUG",
+      version: props.version,
+      commitId: props.commitId
+    })
 
     // Outputs
     this.fooLambda = fooLambda

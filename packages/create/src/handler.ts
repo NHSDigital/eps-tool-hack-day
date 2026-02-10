@@ -7,7 +7,7 @@ import errorHandler from "@nhs/fhir-middy-error-handler"
 
 import {randomUUID, UUID} from "node:crypto"
 
-const logger = new Logger({serviceName: "status"})
+const logger = new Logger({serviceName: "create"})
 
 const invoke = async (funcName: string, payload: any) => {
   const client = new LambdaClient({});

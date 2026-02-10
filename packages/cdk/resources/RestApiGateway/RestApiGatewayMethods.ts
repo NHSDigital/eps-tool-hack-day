@@ -42,7 +42,7 @@ export class RestApiGatewayMethods extends Construct {
     })
 
     const createPrescriptionLambdaResource = props.restApiGateway.root.addResource("create")
-    createPrescriptionLambdaResource.addMethod("POST", new LambdaIntegration(props.createLambda, {
+    createPrescriptionLambdaResource.addMethod("GET", new LambdaIntegration(props.createLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
       authorizationType: AuthorizationType.NONE,

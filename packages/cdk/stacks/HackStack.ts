@@ -23,6 +23,7 @@ import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {getConfigFromEnvVar} from "@nhsdigital/eps-cdk-constructs"
 import {ApiFunctions} from "../resources/Functions"
 import {addNagSuppressions} from "./nagSuppression"
+import {Dynamodb} from "../resources/DynamoDb"
 
 export interface HackStackProps extends StackProps {
   readonly serviceName: string
@@ -175,6 +176,10 @@ export class HackStack extends Stack {
           ttl: Duration.seconds(10)
         }
       ]
+    })
+
+    const dyna = new Dynamodb(this, "Dynamodb", {
+      stackName: props.stackName
     })
 
     // Outputs

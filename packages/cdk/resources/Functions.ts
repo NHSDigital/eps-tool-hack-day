@@ -16,6 +16,7 @@ export interface ApiFunctionsProps {
 export class ApiFunctions extends Construct {
   public readonly fooLambda: TypescriptLambdaFunction
   public readonly createLambda: TypescriptLambdaFunction
+  public readonly processLambda: TypescriptLambdaFunction
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
@@ -43,9 +44,22 @@ export class ApiFunctions extends Construct {
       commitId: props.commitId
     })
 
+    const processLambda = new TypescriptLambdaFunction(this, "ProcessLambda", {
+      functionName: `${props.stackName}-ProcessLambda`,
+      projectBaseDir: baseDir,
+      packageBasePath: "packages/process",
+      entryPoint: "src/handler.ts",
+      environmentVariables: {},
+      logRetentionInDays: 30,
+      logLevel: "DEBUG",
+      version: props.version,
+      commitId: props.commitId
+    })
+
 
     // Outputs
     this.fooLambda = fooLambda
     this.createLambda = createLambda
+    this.processLambda = processLambda
   }
 }

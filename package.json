@@ -20,7 +20,8 @@
     "workspaces": [
         "packages/hack",
         "packages/cdk",
-        "packages/foo"
+        "packages/foo",
+        "packages/process"
     ],
     "devDependencies": {
         "@eslint/js": "^9.38.0",

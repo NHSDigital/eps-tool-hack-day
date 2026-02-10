@@ -31,6 +31,7 @@ const lambdaHandler = async (event: any): Promise<any> => {
 
   // Create an empty record in dynamo with a new uuid
   const uuid: UUID = randomUUID()
+  logger.info("invoking processing lambda", {processingLambdaName: process.env.PROCESSING_LAMBDA_NAME, id: uuid})
   invoke(process.env.PROCESSING_LAMBDA_NAME!, {id: uuid})
 
   // immediately return 200 and the newly created ID

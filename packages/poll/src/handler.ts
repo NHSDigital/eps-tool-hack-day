@@ -20,7 +20,7 @@ const lambdaHandler = async (event: any): Promise<any> => {
   })
 
   // take the action ID from the query string parameters and use it to query the DynamoDB table for any existing records with that action ID
-  const actionID = event.queryStringParameters?.actionId
+  const actionID = event.queryStringParameters?.actionid
 
   if (!actionID) {
     logger.warn("No action ID provided in query parameters")

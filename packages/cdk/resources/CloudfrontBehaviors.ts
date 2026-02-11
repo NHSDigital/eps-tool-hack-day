@@ -31,7 +31,7 @@ export interface CloudfrontBehaviorsProps {
  * Any rewrites for cloudfront requests should go here
  */
 
-export class CloudfrontBehaviors extends Construct{
+export class CloudfrontBehaviors extends Construct {
   public readonly additionalBehaviors: Record<string, BehaviorOptions>
   public readonly s3404UriRewriteFunction: CloudfrontFunction
   public readonly s3404ModifyStatusCodeFunction: CloudfrontFunction
@@ -40,31 +40,33 @@ export class CloudfrontBehaviors extends Construct{
   public readonly keyValueStore: KeyValueStore
   public readonly fullCognitoDomain: string
 
-  public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps){
+  public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps) {
     super(scope, id)
 
     // Resources
 
     const keyValueStore = new KeyValueStore(this, "FunctionsStore", {
       comment: `${props.serviceName}-KeyValueStore`,
-      source: ImportSource.fromInline(JSON.stringify({data: [
-        {
-          key: "404_rewrite",
-          value: "404.html"
-        },
-        {
-          key: "500_rewrite",
-          value: "500.html"
-        },
-        {
-          key: "site_basePath",
-          value: "/site"
-        },
-        {
-          key: "api_path",
-          value: "/api"
-        }
-      ]}))
+      source: ImportSource.fromInline(JSON.stringify({
+        data: [
+          {
+            key: "404_rewrite",
+            value: "404.html"
+          },
+          {
+            key: "500_rewrite",
+            value: "500.html"
+          },
+          {
+            key: "site_basePath",
+            value: "/site"
+          },
+          {
+            key: "api_path",
+            value: "/api"
+          }
+        ]
+      }))
     })
     // Workaround for CF KVS tag issues in latest cdk/cf, see: https://github.com/aws/aws-cdk/issues/36765
     const cfnKeyValueStore = keyValueStore.node.defaultChild as CfnKeyValueStore
@@ -165,6 +167,7 @@ export class CloudfrontBehaviors extends Construct{
         allowedMethods: AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: CachePolicy.CACHING_DISABLED,
+        originRequestPolicy: props.apiGatewayRequestPolicy,
         functionAssociations: [
           {
             function: apiGatewayStripPathFunction.function,

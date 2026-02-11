@@ -5,7 +5,7 @@ import {
   RestApi
 } from "aws-cdk-lib/aws-apigateway"
 import {Construct} from "constructs"
-import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs"
+import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 // import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 
 export interface RestApiGatewayMethodsProps {
@@ -13,6 +13,8 @@ export interface RestApiGatewayMethodsProps {
   readonly restAPiGatewayRole: IRole
   readonly restApiGateway: RestApi
   readonly fooLambda: NodejsFunction
+  readonly createLambda: NodejsFunction
+  readonly pollLambda: NodejsFunction
 }
 
 /**
@@ -35,11 +37,24 @@ export class RestApiGatewayMethods extends Construct {
 
     const prescriptionDetailsLambdaResource = props.restApiGateway.root.addResource("foo")
     prescriptionDetailsLambdaResource.addMethod("GET", new LambdaIntegration(props.fooLambda, {
-       credentialsRole: props.restAPiGatewayRole
-     }), {
-       authorizationType: AuthorizationType.NONE,
-     })
+      credentialsRole: props.restAPiGatewayRole
+    }), {
+      authorizationType: AuthorizationType.NONE,
+    })
 
+    const createPrescriptionLambdaResource = props.restApiGateway.root.addResource("create")
+    createPrescriptionLambdaResource.addMethod("GET", new LambdaIntegration(props.createLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }), {
+      authorizationType: AuthorizationType.NONE,
+    })
+
+    const pollPrescriptionLambdaResource = props.restApiGateway.root.addResource("poll")
+    pollPrescriptionLambdaResource.addMethod("POST", new LambdaIntegration(props.pollLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }), {
+      authorizationType: AuthorizationType.NONE,
+    })
 
     //Outputs
   }

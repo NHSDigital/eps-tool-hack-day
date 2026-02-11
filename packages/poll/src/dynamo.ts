@@ -1,48 +1,28 @@
 import {Logger} from "@aws-lambda-powertools/logger"
-import {DynamoDBClient, QueryCommand, QueryCommandInput} from "@aws-sdk/client-dynamodb"
+import {DynamoDBClient, GetItemCommand, GetItemCommandInput} from "@aws-sdk/client-dynamodb"
 
 const client = new DynamoDBClient()
-const tableName = process.env.TABLE_NAME ?? "PrescriptionStatusUpdates"
+const tableName = process.env.PROCESSING_STATUS_TABLE_NAME!
 
 export async function queryActionState(
   actionID: string,
   logger: Logger
 ): Promise<Array<any>> {
-
-  // Use the GSI to query by PrescriptionID
-  const query: QueryCommandInput = {
+  const query: GetItemCommandInput = {
     TableName: tableName,
-    KeyConditionExpression: "actionId = :aid",
-    ExpressionAttributeValues: {
-      ":aid": {S: actionID}
+    Key: {
+      actionId: {S: actionID}
     }
   }
 
-  let lastEvaluatedKey
-  let items = []
-
-  logger.info("Querying DynamoDB for action ID", {
+  logger.info("Getting DynamoDB item for action ID", {
     actionID,
     tableName,
   })
 
   try {
-    while (true) {
-      if (lastEvaluatedKey) {
-        query.ExclusiveStartKey = lastEvaluatedKey
-      }
-
-      const result = await client.send(new QueryCommand(query))
-
-      if (result.Items) {
-        items.push(...result.Items)
-      }
-
-      lastEvaluatedKey = result.LastEvaluatedKey
-      if (!lastEvaluatedKey) {
-        break
-      }
-    }
+    const result = await client.send(new GetItemCommand(query))
+    const items = result.Item ? [result.Item] : []
 
     logger.info("Retrieved records from DynamoDB", {
       actionID,
@@ -51,7 +31,7 @@ export async function queryActionState(
 
     return items
   } catch (err) {
-    logger.error("Error querying DynamoDB for existing prescription records", {
+    logger.error("Error getting DynamoDB item for existing prescription records", {
       actionID,
       error: err
     })

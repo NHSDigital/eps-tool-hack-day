@@ -8,8 +8,6 @@ import {queryActionState} from "./dynamo"
 
 const logger = new Logger({serviceName: "poll"})
 
-const tableName = process.env.PROCESSING_STATUS_TABLE_NAME!
-
 const lambdaHandler = async (event: any): Promise<any> => {
   logger.appendKeys({
     "nhsd-correlation-id": event.headers["nhsd-correlation-id"],

@@ -50,7 +50,7 @@ export class RestApiGatewayMethods extends Construct {
     })
 
     const pollPrescriptionLambdaResource = props.restApiGateway.root.addResource("poll")
-    pollPrescriptionLambdaResource.addMethod("GET", new LambdaIntegration(props.pollLambda, {
+    pollPrescriptionLambdaResource.addMethod("POST", new LambdaIntegration(props.pollLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
       authorizationType: AuthorizationType.NONE,

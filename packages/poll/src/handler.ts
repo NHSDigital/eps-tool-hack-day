@@ -17,14 +17,14 @@ const lambdaHandler = async (event: any): Promise<any> => {
     "apigw-request-id": event.requestContext.requestId
   })
 
-  // take the action ID from the query string parameters and use it to query the DynamoDB table for any existing records with that action ID
-  const actionID = event.queryStringParameters?.actionid
+  // take the action ID from the body and use it to query the DynamoDB table for any existing records with that action ID
+  const body = event.body ? JSON.parse(event.body) : null
 
-  if (!actionID) {
-    logger.warn("No action ID provided in query parameters")
+  if (!body || !body.actionid) {
+    logger.warn("No action ID provided in request body")
     return {
       statusCode: 400,
-      body: JSON.stringify({message: "Missing required query parameter: actionId"}),
+      body: JSON.stringify({message: "Missing required body parameter: actionid"}),
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "no-cache"
@@ -32,6 +32,7 @@ const lambdaHandler = async (event: any): Promise<any> => {
     }
   }
 
+  const actionID = body.actionid
   const result = await queryActionState(actionID, logger)
 
   return {

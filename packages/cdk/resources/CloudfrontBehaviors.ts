@@ -165,6 +165,7 @@ export class CloudfrontBehaviors extends Construct{
         allowedMethods: AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: CachePolicy.CACHING_DISABLED,
+        originRequestPolicy: props.apiGatewayRequestPolicy,
         functionAssociations: [
           {
             function: apiGatewayStripPathFunction.function,

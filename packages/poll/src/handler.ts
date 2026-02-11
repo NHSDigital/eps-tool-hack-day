@@ -24,7 +24,7 @@ const lambdaHandler = async (event: any): Promise<any> => {
     logger.warn("No action ID provided in query parameters")
     return {
       statusCode: 400,
-      body: JSON.stringify({message: "Missing required query parameter: actionid"}),
+      body: JSON.stringify({message: "Missing required query parameter: actionId"}),
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "no-cache"

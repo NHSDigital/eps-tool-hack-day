@@ -17,6 +17,6 @@
     "tsx": "^4.21.0"
   },
   "devDependencies": {
-    "aws-cdk": "^2.1100.3"
+    "aws-cdk": "^2.1106.0"
   }
 }
